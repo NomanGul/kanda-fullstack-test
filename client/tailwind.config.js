@@ -1,3 +1,4 @@
+const colors = require("tailwindcss/colors");
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
@@ -11,11 +12,17 @@ module.exports = {
     },
     screens: {
       ...defaultTheme.screens,
-      'sm': "575px",
+      sm: "575px",
+    },
+    colors: {
+      ...colors,
+      gray: colors.trueGray,
     },
   },
   variants: {
-    extend: {},
+    extend: {
+      borderWidth: ["focus"],
+    },
   },
   plugins: [],
 };
