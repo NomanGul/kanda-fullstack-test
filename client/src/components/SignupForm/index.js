@@ -1,104 +1,132 @@
-import { ReactComponent as Eye } from "./eye.svg";
-import { ReactComponent as EyeOff } from "./eye-off.svg";
-import { ReactComponent as Info } from "./info.svg";
+import { useState } from "react";
+import * as Yup from "yup";
+import InputField from "../InputField";
+import { useForm } from "../../Hooks/useForm";
+
+export const validateSchema = () =>
+  Yup.object().shape({
+    firstName: Yup.string().required("Please enter first name!"),
+    lastName: Yup.string().required("Please enter last name!"),
+    email: Yup.string().email().required("Please enter valid email!"),
+    password: Yup.string()
+      .required("Please enter password!")
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
+        "Password must have at least 8 characters that include at least 1 lowercase character, 1 uppercase character, 1 number, and 1 special character."
+      ),
+    confirmPassword: Yup.string()
+      .required("Passwords must match!")
+      .test("passwords-match", "Passwords must match!", function (value) {
+        return this.parent.password === value;
+      }),
+  });
 
 const SignupForm = () => {
+  const { validate, setValue, errors, getValues, onFormBlur } = useForm(
+    validateSchema,
+    {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    }
+  );
+  const initialState = getValues();
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    if (showSuccess) {
+      setShowSuccess(false);
+    } else if ((await validate()).isValid) {
+      setShowSuccess(true);
+    }
+  };
+
   return (
-    <form className="flex flex-col space-y-9">
-      <h1 className="font-bold text-2xl text-center p-5">Sign Up</h1>
-      <div className="flex flex-wrap">
-        <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-          <label
-            className="block tracking-wide text-gray-900"
-            htmlFor="grid-first-name"
-          >
-            First Name
-          </label>
-          <input
-            className="appearance-none block w-full text-gray-500 border-b border-gray-300 py-2 leading-tight focus:outline-none focus:border-b-1 focus:border-gray-400"
-            id="grid-first-name"
-            type="text"
-            placeholder="ex. text"
-          />
-        </div>
-        <div className="w-full md:w-1/2 px-3">
-          <label
-            className="block tracking-wide text-gray-900"
-            htmlFor="grid-last-name"
-          >
-            Last Name
-          </label>
-          <input
-            className="appearance-none block w-full text-gray-500 border-b border-gray-300 py-2 leading-tight focus:outline-none focus:border-b-1 focus:border-gray-400"
-            id="grid-last-name"
-            type="text"
-            placeholder="ex. text"
-          />
-        </div>
-      </div>
-      <div className="w-full px-3">
-        <label
-          className="block tracking-wide text-gray-900"
-          htmlFor="grid-email"
-        >
-          Your email
-        </label>
-        <input
-          className="appearance-none block w-full text-gray-500 border-b border-gray-300 py-2 leading-tight focus:outline-none focus:border-b-1 focus:border-gray-400"
-          id="grid-email"
-          type="email"
-          placeholder="ex. abc@xyz.com"
-        />
-      </div>
-      <div className="w-full px-3">
-        <label
-          className="block tracking-wide text-gray-900"
-          htmlFor="grid-password"
-        >
-          Password
-        </label>
-        <div className="relative flex w-full flex-wrap items-stretch">
-          <input
-            className="appearance-none w-full border-b border-gray-300 py-2 leading-tight focus:outline-none focus:border-b-1 focus:border-gray-400"
-            id="grid-password"
-            type="password"
-          />
-          <span className="z-10 absolute right-0 bottom-2 text-gray-900 cursor-pointer">
-            <Eye className="h-6 w-6" />
-          </span>
-        </div>
-        <div className="flex text-sm text-red-600 pt-2">
-          <Info className="h-6 w-10 inline" />
-          <p className="pl-1">
-            Password must be at least 8 characters with contains at least one
-            uppercase letter, symbol and number
-          </p>
-        </div>
-      </div>
-      <div className="w-full px-3">
-        <label
-          className="block tracking-wide text-gray-900"
-          htmlFor="grid-confirm-password"
-        >
-          Confirm Password
-        </label>
-        <div className="relative flex w-full flex-wrap items-stretch">
-          <input
-            className="appearance-none w-full border-b border-gray-300 py-2 leading-tight focus:outline-none focus:border-b-1 focus:border-gray-400"
-            id="grid-confirm-password"
-            type="password"
-          />
-          <span className="z-10 absolute right-0 bottom-2 text-gray-900 cursor-pointer">
-            <EyeOff className="h-6 w-6" />
-          </span>
-        </div>
-      </div>
+    <form onSubmit={onSubmit} className="flex flex-col space-y-9">
+      <h1 className="font-bold text-2xl text-center p-5">
+        {showSuccess ? "You’re all set!" : "Sign Up"}
+      </h1>
+      {!showSuccess && (
+        <>
+          <div className="flex flex-wrap">
+            <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+              <InputField
+                name="firstName"
+                labelText="First Name"
+                type="text"
+                placeholder="e.g. Noman"
+                inputClassNames="block text-gray-600"
+                value={initialState["firstName"]}
+                onChange={setValue}
+                error={!!errors("firstName")}
+                helperText={errors("firstName")}
+                onBlur={onFormBlur}
+              />
+            </div>
+            <div className="w-full md:w-1/2 px-3">
+              <InputField
+                name="lastName"
+                labelText="Last Name"
+                type="text"
+                placeholder="e.g. Gul"
+                inputClassNames="block text-gray-600"
+                value={initialState["lastName"]}
+                onChange={setValue}
+                error={!!errors("lastName")}
+                helperText={errors("lastName")}
+                onBlur={onFormBlur}
+              />
+            </div>
+          </div>
+          <div className="w-full px-3">
+            <InputField
+              name="email"
+              labelText="Your email"
+              type="email"
+              placeholder="ex. abc@xyz.com"
+              inputClassNames="block text-gray-600"
+              value={initialState["email"]}
+              onChange={setValue}
+              error={!!errors("email")}
+              helperText={errors("email")}
+              onBlur={onFormBlur}
+            />
+          </div>
+          <div className="w-full px-3">
+            <InputField
+              name="password"
+              labelText="Password"
+              type="password"
+              value={initialState["password"]}
+              onChange={setValue}
+              error={!!errors("password")}
+              helperText={errors("password")}
+              onBlur={onFormBlur}
+            />
+          </div>
+          <div className="w-full px-3">
+            <InputField
+              name="confirmPassword"
+              labelText="Confirm Password"
+              type="password"
+              value={initialState["confirmPassword"]}
+              onChange={setValue}
+              error={!!errors("confirmPassword")}
+              helperText={errors("confirmPassword")}
+              onBlur={onFormBlur}
+            />
+          </div>
+        </>
+      )}
       <div className="flex items-center justify-center">
         <button
           className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-full py-3 px-16 focus:outline-none focus:shadow-outline"
           type="submit"
         >
-          Submit
+          {showSuccess ? "Try Again" : "Submit"}
         </button>
       </div>
     </form>
