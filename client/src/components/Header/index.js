@@ -1,4 +1,4 @@
-import { ReactComponent as Logo } from "../../logo.svg";
+import { ReactComponent as Logo } from "../../assets/logo.svg";
 
 const Header = () => (
   <header className="max-w-full p-6 bg-white shadow sm:bg-indigo-900">
